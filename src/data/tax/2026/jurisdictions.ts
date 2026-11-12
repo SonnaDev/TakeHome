@@ -28,23 +28,40 @@ const US_NO_TAX: [string, string][] = [
   ["WY", "Wyoming"],
 ];
 
+// US states with verified 2026 tax formulas & payroll items from official revenue agencies
+const US_VERIFIED_TAX: [string, string][] = [
+  ["CA", "California"],
+  ["CO", "Colorado"],
+  ["IL", "Illinois"],
+  ["MA", "Massachusetts"],
+  ["NY", "New York"],
+  ["PA", "Pennsylvania"],
+];
+
 const US_PENDING: [string, string][] = [
-  ["AL", "Alabama"], ["AZ", "Arizona"], ["AR", "Arkansas"], ["CA", "California"],
-  ["CO", "Colorado"], ["CT", "Connecticut"], ["DE", "Delaware"], ["DC", "District of Columbia"],
-  ["GA", "Georgia"], ["HI", "Hawaii"], ["ID", "Idaho"], ["IL", "Illinois"],
+  ["AL", "Alabama"], ["AZ", "Arizona"], ["AR", "Arkansas"],
+  ["CT", "Connecticut"], ["DE", "Delaware"], ["DC", "District of Columbia"],
+  ["GA", "Georgia"], ["HI", "Hawaii"], ["ID", "Idaho"],
   ["IN", "Indiana"], ["IA", "Iowa"], ["KS", "Kansas"], ["KY", "Kentucky"],
-  ["LA", "Louisiana"], ["ME", "Maine"], ["MD", "Maryland"], ["MA", "Massachusetts"],
+  ["LA", "Louisiana"], ["ME", "Maine"], ["MD", "Maryland"],
   ["MI", "Michigan"], ["MN", "Minnesota"], ["MS", "Mississippi"], ["MO", "Missouri"],
   ["MT", "Montana"], ["NE", "Nebraska"], ["NJ", "New Jersey"], ["NM", "New Mexico"],
-  ["NY", "New York"], ["NC", "North Carolina"], ["ND", "North Dakota"], ["OH", "Ohio"],
-  ["OK", "Oklahoma"], ["OR", "Oregon"], ["PA", "Pennsylvania"], ["RI", "Rhode Island"],
+  ["NC", "North Carolina"], ["ND", "North Dakota"], ["OH", "Ohio"],
+  ["OK", "Oklahoma"], ["OR", "Oregon"], ["RI", "Rhode Island"],
   ["SC", "South Carolina"], ["UT", "Utah"], ["VT", "Vermont"], ["VA", "Virginia"],
   ["WV", "West Virginia"], ["WI", "Wisconsin"],
 ];
 
+// Canadian provinces with verified 2026 brackets and provincial rules
+const CA_VERIFIED: [string, string][] = [
+  ["AB", "Alberta"],
+  ["BC", "British Columbia"],
+  ["ON", "Ontario"],
+];
+
 const CA_PENDING: [string, string][] = [
-  ["AB", "Alberta"], ["BC", "British Columbia"], ["MB", "Manitoba"], ["NB", "New Brunswick"],
-  ["NL", "Newfoundland and Labrador"], ["NS", "Nova Scotia"], ["ON", "Ontario"],
+  ["MB", "Manitoba"], ["NB", "New Brunswick"],
+  ["NL", "Newfoundland and Labrador"], ["NS", "Nova Scotia"],
   ["PE", "Prince Edward Island"], ["QC", "Quebec"], ["SK", "Saskatchewan"],
   ["NT", "Northwest Territories"], ["NU", "Nunavut"], ["YT", "Yukon"],
 ];
@@ -53,8 +70,14 @@ export const JURISDICTIONS: Jurisdiction[] = [
   ...US_NO_TAX.map(([code, name]): Jurisdiction => ({
     code: `US-${code}`, name, country: "US", status: "verified", noIncomeTax: true,
   })),
+  ...US_VERIFIED_TAX.map(([code, name]): Jurisdiction => ({
+    code: `US-${code}`, name, country: "US", status: "verified",
+  })),
   ...US_PENDING.map(([code, name]): Jurisdiction => ({
     code: `US-${code}`, name, country: "US", status: "pending",
+  })),
+  ...CA_VERIFIED.map(([code, name]): Jurisdiction => ({
+    code: `CA-${code}`, name, country: "CA", status: "verified",
   })),
   ...CA_PENDING.map(([code, name]): Jurisdiction => ({
     code: `CA-${code}`, name, country: "CA", status: "pending",
