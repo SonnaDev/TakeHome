@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { DollarSign, Scale } from "lucide-react";
+import { ShareBar } from "@/components/ShareBar";
 import { OfferForm } from "./OfferForm";
 import { ResultCard, type OfferComputedSummary } from "./ResultCard";
 import { BreakdownTable, type OfferDetailedBreakdown } from "./BreakdownTable";
@@ -285,16 +286,19 @@ export function ComparisonTool({ initialQuery }: ComparisonToolProps) {
         />
       </div>
 
-      {/* Primary Result Card */}
+      {/* Primary Result Card & Share Bar */}
       {calcResA.ok && calcResB.ok ? (
-        <ResultCard
-          offerA={summaryA}
-          offerB={summaryB}
-          displayCurrency={query.currency}
-          isColAdjusted={query.adjustCol}
-          fxRateDate={fx.date}
-          fxRate={fx.usdToCad}
-        />
+        <>
+          <ResultCard
+            offerA={summaryA}
+            offerB={summaryB}
+            displayCurrency={query.currency}
+            isColAdjusted={query.adjustCol}
+            fxRateDate={fx.date}
+            fxRate={fx.usdToCad}
+          />
+          <ShareBar />
+        </>
       ) : (
         <div className="p-6 bg-[var(--surface)] border border-[var(--warn)] rounded-xl text-center text-sm text-[var(--warn)] font-medium">
           {!calcResA.ok && <div>Offer A: {calcResA.message}</div>}

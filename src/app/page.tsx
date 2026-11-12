@@ -1,9 +1,45 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { ComparisonTool } from "@/components/calculator/ComparisonTool";
-import { parseComparisonParams } from "@/lib/schema";
+import { encodeComparisonParams, parseComparisonParams } from "@/lib/schema";
+import { getJurisdiction } from "@/data/tax/2026/jurisdictions";
 
 interface PageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
+}
+
+export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
+  const resolved = await searchParams;
+  const q = parseComparisonParams(resolved);
+  const nameA = getJurisdiction(q.locA)?.name || q.locA;
+  const nameB = getJurisdiction(q.locB)?.name || q.locB;
+
+  const title = `${nameA} vs ${nameB} Salary & Take-Home Comparison (2026)`;
+  const description = `Compare what a ${q.currency} $${q.salaryA.toLocaleString()} offer in ${nameA} leaves you after taxes and cost of living compared to $${q.salaryB.toLocaleString()} in ${nameB}.`;
+  const ogUrl = `/api/og?${encodeComparisonParams(q)}`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      images: [
+        {
+          url: ogUrl,
+          width: 1200,
+          height: 630,
+          alt: `${nameA} vs ${nameB} Take-Home Comparison`,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [ogUrl],
+    },
+  };
 }
 
 export default async function HomePage({ searchParams }: PageProps) {
