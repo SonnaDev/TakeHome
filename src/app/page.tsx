@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Suspense } from "react";
 import { ComparisonTool } from "@/components/calculator/ComparisonTool";
 import { encodeComparisonParams, parseComparisonParams } from "@/lib/schema";
@@ -14,8 +15,9 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
   const nameA = getJurisdiction(q.locA)?.name || q.locA;
   const nameB = getJurisdiction(q.locB)?.name || q.locB;
 
+  const fmt = new Intl.NumberFormat("en-US");
   const title = `${nameA} vs ${nameB} Salary & Take-Home Comparison (2026)`;
-  const description = `Compare what a ${q.currency} $${q.salaryA.toLocaleString()} offer in ${nameA} leaves you after taxes and cost of living compared to $${q.salaryB.toLocaleString()} in ${nameB}.`;
+  const description = `Compare what a ${q.currency} $${fmt.format(q.salaryA)} offer in ${nameA} leaves you after taxes and cost of living compared to $${fmt.format(q.salaryB)} in ${nameB}.`;
   const ogUrl = `/api/og?${encodeComparisonParams(q)}`;
 
   return {
@@ -42,10 +44,17 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
   };
 }
 
-export default async function HomePage({ searchParams }: PageProps) {
+async function ComparisonToolSection({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const resolvedParams = await searchParams;
   const initialQuery = parseComparisonParams(resolvedParams);
+  return <ComparisonTool initialQuery={initialQuery} />;
+}
 
+export default function HomePage({ searchParams }: PageProps) {
   return (
     <div className="min-h-screen flex flex-col justify-between">
       {/* Header */}
@@ -60,12 +69,12 @@ export default async function HomePage({ searchParams }: PageProps) {
             </span>
           </div>
           <nav className="flex items-center gap-4 text-sm font-medium text-[var(--muted)]">
-            <a href="/data" className="hover:text-[var(--text)] transition-colors">
+            <Link href="/data" className="hover:text-[var(--text)] transition-colors">
               Data & Sources
-            </a>
-            <a href="/guides" className="hover:text-[var(--text)] transition-colors hidden sm:inline">
+            </Link>
+            <Link href="/guides" className="hover:text-[var(--text)] transition-colors hidden sm:inline">
               Guides
-            </a>
+            </Link>
           </nav>
         </div>
       </header>
@@ -82,9 +91,9 @@ export default async function HomePage({ searchParams }: PageProps) {
           </p>
         </div>
 
-        {/* Tool */}
+        {/* Tool wrapped in Suspense so searchParams streaming works with cacheComponents/PPR */}
         <Suspense fallback={<div className="h-96 rounded-xl bg-[var(--surface)] animate-pulse" />}>
-          <ComparisonTool initialQuery={initialQuery} />
+          <ComparisonToolSection searchParams={searchParams} />
         </Suspense>
 
         {/* Explanatory Context Section */}
@@ -125,10 +134,10 @@ export default async function HomePage({ searchParams }: PageProps) {
             <span>100% private: salary data never leaves your browser.</span>
           </div>
           <div className="flex items-center gap-4">
-            <a href="/privacy" className="hover:text-[var(--text)]">Privacy</a>
-            <a href="/terms" className="hover:text-[var(--text)]">Terms</a>
-            <a href="/disclaimer" className="hover:text-[var(--text)]">Disclaimer</a>
-            <a href="/data" className="hover:text-[var(--text)]">Data Sources</a>
+            <Link href="/privacy" className="hover:text-[var(--text)]">Privacy</Link>
+            <Link href="/terms" className="hover:text-[var(--text)]">Terms</Link>
+            <Link href="/disclaimer" className="hover:text-[var(--text)]">Disclaimer</Link>
+            <Link href="/data" className="hover:text-[var(--text)]">Data Sources</Link>
           </div>
         </div>
       </footer>

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { FALLBACK_FX, type FxRateResult } from "@/lib/fx";
 
-export const revalidate = 86400; // Cache daily
+
 
 interface BoCObservation {
   d: string;

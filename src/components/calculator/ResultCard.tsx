@@ -36,6 +36,7 @@ export function ResultCard({
   fxRate,
 }: ResultCardProps) {
   const sym = displayCurrency === "USD" ? "$" : "C$";
+  const fmt = new Intl.NumberFormat("en-US");
 
   const valA = isColAdjusted && offerA.colAdjustedTakeHomeNormalized
     ? offerA.colAdjustedTakeHomeNormalized
@@ -56,7 +57,7 @@ export function ResultCard({
   if (winner === "TIE") {
     verdictText = "Both offers result in equivalent purchasing power after deductions.";
   } else {
-    verdictText = `${winningOffer.label} (${winningOffer.locationName}) leaves you ${sym}${diff.toLocaleString()}/year (${sym}${monthlyDiff.toLocaleString()}/month) more ${
+    verdictText = `${winningOffer.label} (${winningOffer.locationName}) leaves you ${sym}${fmt.format(diff)}/year (${sym}${fmt.format(monthlyDiff)}/month) more ${
       isColAdjusted ? "in cost-of-living purchasing power" : "after taxes and deductions"
     } than ${losingOffer.label} (${losingOffer.locationName}).`;
   }
@@ -90,7 +91,7 @@ export function ResultCard({
           {winner === "A" && (
             <div className="inline-flex items-center gap-1.5 self-start px-2.5 py-1 rounded-full text-xs font-bold bg-[var(--win)] text-white">
               <Award className="w-3.5 h-3.5" />
-              Better by {sym}{diff.toLocaleString()}/yr
+              Better by {sym}{fmt.format(diff)}/yr
             </div>
           )}
 
@@ -105,11 +106,11 @@ export function ResultCard({
 
           <div className="flex flex-col">
             <span className="text-3xl sm:text-4xl font-black text-[var(--text)] tabular-nums">
-              {sym}{Math.round(valA).toLocaleString()}
+              {sym}{fmt.format(Math.round(valA))}
               <span className="text-sm font-normal text-[var(--muted)]">/yr</span>
             </span>
             <span className="text-sm font-medium text-[var(--muted)] tabular-nums">
-              {sym}{Math.round(valA / 12).toLocaleString()}/month net
+              {sym}{fmt.format(Math.round(valA / 12))}/month net
             </span>
           </div>
 
@@ -117,7 +118,7 @@ export function ResultCard({
             <div className="flex justify-between">
               <span>Gross compensation:</span>
               <span className="font-semibold tabular-nums text-[var(--text)]">
-                {sym}{Math.round(offerA.grossNormalized).toLocaleString()}
+                {sym}{fmt.format(Math.round(offerA.grossNormalized))}
               </span>
             </div>
             <div className="flex justify-between">
@@ -130,7 +131,7 @@ export function ResultCard({
               <div className="flex justify-between text-[11px] italic">
                 <span>Local take-home:</span>
                 <span className="tabular-nums">
-                  {offerA.originalCurrency} ${Math.round(offerA.nominalTakeHomeLocal).toLocaleString()}
+                  {offerA.originalCurrency} ${fmt.format(Math.round(offerA.nominalTakeHomeLocal))}
                 </span>
               </div>
             )}
@@ -154,7 +155,7 @@ export function ResultCard({
           {winner === "B" && (
             <div className="inline-flex items-center gap-1.5 self-start px-2.5 py-1 rounded-full text-xs font-bold bg-[var(--win)] text-white">
               <Award className="w-3.5 h-3.5" />
-              Better by {sym}{diff.toLocaleString()}/yr
+              Better by {sym}{fmt.format(diff)}/yr
             </div>
           )}
 
@@ -169,11 +170,11 @@ export function ResultCard({
 
           <div className="flex flex-col">
             <span className="text-3xl sm:text-4xl font-black text-[var(--text)] tabular-nums">
-              {sym}{Math.round(valB).toLocaleString()}
+              {sym}{fmt.format(Math.round(valB))}
               <span className="text-sm font-normal text-[var(--muted)]">/yr</span>
             </span>
             <span className="text-sm font-medium text-[var(--muted)] tabular-nums">
-              {sym}{Math.round(valB / 12).toLocaleString()}/month net
+              {sym}{fmt.format(Math.round(valB / 12))}/month net
             </span>
           </div>
 
@@ -181,7 +182,7 @@ export function ResultCard({
             <div className="flex justify-between">
               <span>Gross compensation:</span>
               <span className="font-semibold tabular-nums text-[var(--text)]">
-                {sym}{Math.round(offerB.grossNormalized).toLocaleString()}
+                {sym}{fmt.format(Math.round(offerB.grossNormalized))}
               </span>
             </div>
             <div className="flex justify-between">
@@ -194,7 +195,7 @@ export function ResultCard({
               <div className="flex justify-between text-[11px] italic">
                 <span>Local take-home:</span>
                 <span className="tabular-nums">
-                  {offerB.originalCurrency} ${Math.round(offerB.nominalTakeHomeLocal).toLocaleString()}
+                  {offerB.originalCurrency} ${fmt.format(Math.round(offerB.nominalTakeHomeLocal))}
                 </span>
               </div>
             )}

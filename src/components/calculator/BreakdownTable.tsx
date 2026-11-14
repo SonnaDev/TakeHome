@@ -1,6 +1,5 @@
 "use client";
 
-import { ExternalLink } from "lucide-react";
 import type { Currency } from "@/lib/fx";
 import type { TaxLine } from "@/lib/calc/types";
 
@@ -32,6 +31,7 @@ export function BreakdownTable({
   usdToCadRate,
 }: BreakdownTableProps) {
   const sym = displayCurrency === "USD" ? "$" : "C$";
+  const fmt = new Intl.NumberFormat("en-US");
 
   const normalize = (amount: number, fromCurrency: Currency): number => {
     if (fromCurrency === displayCurrency) return amount;
@@ -71,10 +71,10 @@ export function BreakdownTable({
             <tr>
               <td className="py-3 px-2 font-medium">Base Salary</td>
               <td className="py-3 px-2 text-right tabular-nums">
-                {sym}{Math.round(normalize(offerA.gross, offerA.currency)).toLocaleString()}
+                {sym}{fmt.format(Math.round(normalize(offerA.gross, offerA.currency)))}
               </td>
               <td className="py-3 px-2 text-right tabular-nums">
-                {sym}{Math.round(normalize(offerB.gross, offerB.currency)).toLocaleString()}
+                {sym}{fmt.format(Math.round(normalize(offerB.gross, offerB.currency)))}
               </td>
             </tr>
 
@@ -84,12 +84,12 @@ export function BreakdownTable({
                 <td className="py-3 px-2 font-medium">Annual Bonus</td>
                 <td className="py-3 px-2 text-right tabular-nums">
                   {offerA.bonus > 0
-                    ? `${sym}${Math.round(normalize(offerA.bonus, offerA.currency)).toLocaleString()}`
+                    ? `${sym}${fmt.format(Math.round(normalize(offerA.bonus, offerA.currency)))}`
                     : "—"}
                 </td>
                 <td className="py-3 px-2 text-right tabular-nums">
                   {offerB.bonus > 0
-                    ? `${sym}${Math.round(normalize(offerB.bonus, offerB.currency)).toLocaleString()}`
+                    ? `${sym}${fmt.format(Math.round(normalize(offerB.bonus, offerB.currency)))}`
                     : "—"}
                 </td>
               </tr>
@@ -99,60 +99,67 @@ export function BreakdownTable({
             <tr className="bg-[var(--bg)]/50 font-semibold">
               <td className="py-2.5 px-2">Total Gross Earnings</td>
               <td className="py-2.5 px-2 text-right tabular-nums">
-                {sym}{Math.round(normalize(offerA.gross + offerA.bonus, offerA.currency)).toLocaleString()}
+                {sym}{fmt.format(Math.round(normalize(offerA.gross + offerA.bonus, offerA.currency)))}
               </td>
               <td className="py-2.5 px-2 text-right tabular-nums">
-                {sym}{Math.round(normalize(offerB.gross + offerB.bonus, offerB.currency)).toLocaleString()}
+                {sym}{fmt.format(Math.round(normalize(offerB.gross + offerB.bonus, offerB.currency)))}
               </td>
             </tr>
 
-            {/* Taxes Header */}
-            <tr className="bg-[var(--bg)] text-xs font-bold uppercase tracking-wider text-[var(--muted)]">
-              <td colSpan={3} className="py-2 px-2">Mandatory Taxes & Payroll Items</td>
+            {/* Statutory Tax Breakdown Headers */}
+            <tr className="border-t-2 border-[var(--border)]">
+              <td colSpan={3} className="pt-4 pb-1 px-2 text-xs font-bold uppercase tracking-wider text-[var(--accent)]">
+                Taxes & Statutory Contributions
+              </td>
             </tr>
 
-            {/* Offer A Taxes */}
+            {/* Render unique tax lines side by side */}
             {offerA.taxLines.map((line, idx) => (
               <tr key={`a-tax-${idx}`}>
-                <td className="py-2 px-2 text-xs sm:text-sm pl-4 flex items-center gap-1.5 text-[var(--muted)]">
-                  <span>{line.label} (Offer A)</span>
+                <td className="py-2 px-2 text-xs text-[var(--muted)]">
+                  {line.label}
                 </td>
-                <td className="py-2 px-2 text-right tabular-nums text-xs sm:text-sm font-medium">
-                  {sym}{Math.round(normalize(line.amount, offerA.currency)).toLocaleString()}
+                <td className="py-2 px-2 text-right tabular-nums text-xs">
+                  {sym}{fmt.format(Math.round(normalize(line.amount, offerA.currency)))}
                 </td>
                 <td className="py-2 px-2 text-right tabular-nums text-xs text-[var(--muted)]">
-                  —
+                  {/* Matching line in B if any, else dash */}
+                  {offerB.taxLines[idx] ? (
+                    <span>
+                      {sym}{fmt.format(Math.round(normalize(offerB.taxLines[idx].amount, offerB.currency)))}
+                    </span>
+                  ) : (
+                    "—"
+                  )}
                 </td>
               </tr>
             ))}
 
-            {/* Offer B Taxes */}
-            {offerB.taxLines.map((line, idx) => (
-              <tr key={`b-tax-${idx}`}>
-                <td className="py-2 px-2 text-xs sm:text-sm pl-4 flex items-center gap-1.5 text-[var(--muted)]">
-                  <span>{line.label} (Offer B)</span>
+            {/* If offerB has more tax lines than offerA, render remaining */}
+            {offerB.taxLines.slice(offerA.taxLines.length).map((line, idx) => (
+              <tr key={`b-tax-extra-${idx}`}>
+                <td className="py-2 px-2 text-xs text-[var(--muted)]">
+                  {line.label}
                 </td>
-                <td className="py-2 px-2 text-right tabular-nums text-xs text-[var(--muted)]">
-                  —
-                </td>
-                <td className="py-2 px-2 text-right tabular-nums text-xs sm:text-sm font-medium">
-                  {sym}{Math.round(normalize(line.amount, offerB.currency)).toLocaleString()}
+                <td className="py-2 px-2 text-right tabular-nums text-xs text-[var(--muted)]">—</td>
+                <td className="py-2 px-2 text-right tabular-nums text-xs">
+                  {sym}{fmt.format(Math.round(normalize(line.amount, offerB.currency)))}
                 </td>
               </tr>
             ))}
 
-            {/* Total Tax Row */}
-            <tr className="bg-[var(--bg)]/50 font-semibold">
-              <td className="py-2.5 px-2">Total Statutory Taxes</td>
-              <td className="py-2.5 px-2 text-right tabular-nums text-[var(--warn)]">
-                {sym}{Math.round(normalize(offerA.totalTax, offerA.currency)).toLocaleString()}
+            {/* Total Tax Subtotal */}
+            <tr className="font-semibold border-t border-[var(--border)] text-[var(--warn)]">
+              <td className="py-2.5 px-2">Total Tax & Statutory Deductions</td>
+              <td className="py-2.5 px-2 text-right tabular-nums">
+                {sym}{fmt.format(Math.round(normalize(offerA.totalTax, offerA.currency)))}
               </td>
-              <td className="py-2.5 px-2 text-right tabular-nums text-[var(--warn)]">
-                {sym}{Math.round(normalize(offerB.totalTax, offerB.currency)).toLocaleString()}
+              <td className="py-2.5 px-2 text-right tabular-nums">
+                {sym}{fmt.format(Math.round(normalize(offerB.totalTax, offerB.currency)))}
               </td>
             </tr>
 
-            {/* Voluntary Deductions */}
+            {/* Voluntary & Out-of-Pocket Deductions */}
             {(offerA.preTaxRetirement > 0 ||
               offerB.preTaxRetirement > 0 ||
               offerA.healthPremiumAnnual > 0 ||
@@ -160,75 +167,84 @@ export function BreakdownTable({
               offerA.commuteAnnual > 0 ||
               offerB.commuteAnnual > 0) && (
               <>
-                <tr className="bg-[var(--bg)] text-xs font-bold uppercase tracking-wider text-[var(--muted)]">
-                  <td colSpan={3} className="py-2 px-2">Benefits & Out-of-Pocket Expenses</td>
-                </tr>
-                {/* 401k / RRSP */}
-                <tr>
-                  <td className="py-2 px-2 pl-4 text-xs sm:text-sm">Pre-Tax Retirement</td>
-                  <td className="py-2 px-2 text-right tabular-nums text-xs sm:text-sm">
-                    {sym}{Math.round(normalize(offerA.preTaxRetirement, offerA.currency)).toLocaleString()}
-                  </td>
-                  <td className="py-2 px-2 text-right tabular-nums text-xs sm:text-sm">
-                    {sym}{Math.round(normalize(offerB.preTaxRetirement, offerB.currency)).toLocaleString()}
+                <tr className="border-t-2 border-[var(--border)]">
+                  <td colSpan={3} className="pt-4 pb-1 px-2 text-xs font-bold uppercase tracking-wider text-[var(--muted)]">
+                    Voluntary & Out-of-Pocket Deductions
                   </td>
                 </tr>
+
+                {/* Retirement 401k / RRSP */}
+                {(offerA.preTaxRetirement > 0 || offerB.preTaxRetirement > 0) && (
+                  <tr>
+                    <td className="py-2 px-2 text-xs text-[var(--muted)]">Pre-Tax Retirement Contribution</td>
+                    <td className="py-2 px-2 text-right tabular-nums text-xs">
+                      {sym}{fmt.format(Math.round(normalize(offerA.preTaxRetirement, offerA.currency)))}
+                    </td>
+                    <td className="py-2 px-2 text-right tabular-nums text-xs">
+                      {sym}{fmt.format(Math.round(normalize(offerB.preTaxRetirement, offerB.currency)))}
+                    </td>
+                  </tr>
+                )}
+
                 {/* Healthcare Premium */}
-                <tr>
-                  <td className="py-2 px-2 pl-4 text-xs sm:text-sm">Employee Health Premiums (Annual)</td>
-                  <td className="py-2 px-2 text-right tabular-nums text-xs sm:text-sm">
-                    {sym}{Math.round(normalize(offerA.healthPremiumAnnual, offerA.currency)).toLocaleString()}
-                  </td>
-                  <td className="py-2 px-2 text-right tabular-nums text-xs sm:text-sm">
-                    {sym}{Math.round(normalize(offerB.healthPremiumAnnual, offerB.currency)).toLocaleString()}
-                  </td>
-                </tr>
+                {(offerA.healthPremiumAnnual > 0 || offerB.healthPremiumAnnual > 0) && (
+                  <tr>
+                    <td className="py-2 px-2 text-xs text-[var(--muted)]">Employee Health Premium (Annual)</td>
+                    <td className="py-2 px-2 text-right tabular-nums text-xs">
+                      {sym}{fmt.format(Math.round(normalize(offerA.healthPremiumAnnual, offerA.currency)))}
+                    </td>
+                    <td className="py-2 px-2 text-right tabular-nums text-xs">
+                      {sym}{fmt.format(Math.round(normalize(offerB.healthPremiumAnnual, offerB.currency)))}
+                    </td>
+                  </tr>
+                )}
+
                 {/* Commute */}
-                <tr>
-                  <td className="py-2 px-2 pl-4 text-xs sm:text-sm">Commute / Transit (Annual)</td>
-                  <td className="py-2 px-2 text-right tabular-nums text-xs sm:text-sm">
-                    {sym}{Math.round(normalize(offerA.commuteAnnual, offerA.currency)).toLocaleString()}
-                  </td>
-                  <td className="py-2 px-2 text-right tabular-nums text-xs sm:text-sm">
-                    {sym}{Math.round(normalize(offerB.commuteAnnual, offerB.currency)).toLocaleString()}
-                  </td>
-                </tr>
+                {(offerA.commuteAnnual > 0 || offerB.commuteAnnual > 0) && (
+                  <tr>
+                    <td className="py-2 px-2 text-xs text-[var(--muted)]">Estimated Commute Expenses (Annual)</td>
+                    <td className="py-2 px-2 text-right tabular-nums text-xs">
+                      {sym}{fmt.format(Math.round(normalize(offerA.commuteAnnual, offerA.currency)))}
+                    </td>
+                    <td className="py-2 px-2 text-right tabular-nums text-xs">
+                      {sym}{fmt.format(Math.round(normalize(offerB.commuteAnnual, offerB.currency)))}
+                    </td>
+                  </tr>
+                )}
               </>
             )}
 
-            {/* Final In-Pocket Take-Home */}
-            <tr className="border-t-2 border-[var(--border)] bg-[var(--surface)] text-base font-bold">
-              <td className="py-3 px-2">Estimated Net Take-Home (Annual)</td>
-              <td className="py-3 px-2 text-right tabular-nums text-[var(--win)] text-lg">
-                {sym}{Math.round(normalize(offerA.netInPocket, offerA.currency)).toLocaleString()}
+            {/* Net In Pocket Final Row */}
+            <tr className="border-t-2 border-[var(--border)] bg-[var(--win)]/10 font-bold text-base text-[var(--text)]">
+              <td className="py-3 px-2">Net Cash In Pocket (Annual)</td>
+              <td className="py-3 px-2 text-right tabular-nums text-[var(--win)]">
+                {sym}{fmt.format(Math.round(normalize(offerA.netInPocket, offerA.currency)))}
               </td>
-              <td className="py-3 px-2 text-right tabular-nums text-[var(--win)] text-lg">
-                {sym}{Math.round(normalize(offerB.netInPocket, offerB.currency)).toLocaleString()}
+              <td className="py-3 px-2 text-right tabular-nums text-[var(--win)]">
+                {sym}{fmt.format(Math.round(normalize(offerB.netInPocket, offerB.currency)))}
               </td>
             </tr>
-            <tr className="bg-[var(--surface)] text-xs text-[var(--muted)] font-medium">
-              <td className="py-1 px-2">Monthly Net</td>
-              <td className="py-1 px-2 text-right tabular-nums">
-                {sym}{Math.round(normalize(offerA.netInPocket / 12, offerA.currency)).toLocaleString()}/mo
+
+            <tr className="text-xs text-[var(--muted)] font-medium">
+              <td className="py-2 px-2">Net Cash In Pocket (Monthly)</td>
+              <td className="py-2 px-2 text-right tabular-nums">
+                {sym}{fmt.format(Math.round(normalize(offerA.netInPocket / 12, offerA.currency)))}/mo
               </td>
-              <td className="py-1 px-2 text-right tabular-nums">
-                {sym}{Math.round(normalize(offerB.netInPocket / 12, offerB.currency)).toLocaleString()}/mo
+              <td className="py-2 px-2 text-right tabular-nums">
+                {sym}{fmt.format(Math.round(normalize(offerB.netInPocket / 12, offerB.currency)))}/mo
               </td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between text-xs text-[var(--muted)] pt-3 border-t border-[var(--border)] gap-2">
+      <div className="text-[11px] text-[var(--muted)] leading-relaxed border-t border-[var(--border)] pt-3 flex flex-col gap-1">
         <span>
-          Sources: IRS Rev. Proc. 2025-32, CRA T4127, SSA 2026 COLA, state & provincial revenue statutes.
+          • Tax figures represent single filer statutory employees with standard deductions for tax year 2026.
         </span>
-        <a
-          href="/data"
-          className="inline-flex items-center gap-1 text-[var(--accent)] hover:underline font-medium"
-        >
-          View data methodology & citations <ExternalLink className="w-3 h-3" />
-        </a>
+        <span>
+          • Surtaxes and state/provincial healthcare levies (e.g. Ontario Health Premium, WA Cares, CA SDI) are included under statutory deductions.
+        </span>
       </div>
     </section>
   );

@@ -1,11 +1,36 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { Check, Copy, Share2 } from "lucide-react";
 
 interface ShareBarProps {
   title?: string;
   verdict?: string;
+}
+
+function subscribeUrl(callback: () => void) {
+  window.addEventListener("popstate", callback);
+  return () => window.removeEventListener("popstate", callback);
+}
+
+function getClientUrl() {
+  return window.location.href;
+}
+
+function getServerUrl() {
+  return "https://takehomenorth.com";
+}
+
+function noopSubscribe() {
+  return () => {};
+}
+
+function getCanShare() {
+  return typeof navigator !== "undefined" && typeof navigator.share === "function";
+}
+
+function getServerCanShare() {
+  return false;
 }
 
 export function ShareBar({
@@ -14,12 +39,8 @@ export function ShareBar({
 }: ShareBarProps) {
   const [copied, setCopied] = useState(false);
 
-  const getShareUrl = () => {
-    if (typeof window !== "undefined") {
-      return window.location.href;
-    }
-    return "https://takehomenorth.com";
-  };
+  const shareUrl = useSyncExternalStore(subscribeUrl, getClientUrl, getServerUrl);
+  const canShare = useSyncExternalStore(noopSubscribe, getCanShare, getServerCanShare);
 
   const shareText = verdict
     ? `${verdict} via TakeHome North:`
@@ -27,7 +48,7 @@ export function ShareBar({
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(getShareUrl());
+      await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
       if (typeof window !== "undefined" && (window as unknown as { gtag?: (...args: unknown[]) => void }).gtag) {
@@ -41,12 +62,12 @@ export function ShareBar({
   };
 
   const handleNativeShare = async () => {
-    if (typeof navigator !== "undefined" && navigator.share) {
+    if (canShare) {
       try {
         await navigator.share({
           title: "TakeHome North Comparison",
           text: shareText,
-          url: getShareUrl(),
+          url: shareUrl,
         });
         if (typeof window !== "undefined" && (window as unknown as { gtag?: (...args: unknown[]) => void }).gtag) {
           (window as unknown as { gtag: (...args: unknown[]) => void }).gtag("event", "share_clicked", {
@@ -61,22 +82,12 @@ export function ShareBar({
     }
   };
 
-  const getTwitterShareUrl = () => {
-    const url = encodeURIComponent(getShareUrl());
-    const text = encodeURIComponent(shareText);
-    return `https://twitter.com/intent/tweet?text=${text}&url=${url}`;
-  };
+  const encodedUrl = encodeURIComponent(shareUrl);
+  const encodedText = encodeURIComponent(shareText);
 
-  const getLinkedInShareUrl = () => {
-    const url = encodeURIComponent(getShareUrl());
-    return `https://www.linkedin.com/sharing/share-offsite/?url=${url}`;
-  };
-
-  const getRedditShareUrl = () => {
-    const url = encodeURIComponent(getShareUrl());
-    const text = encodeURIComponent(shareText);
-    return `https://reddit.com/submit?url=${url}&title=${text}`;
-  };
+  const twitterShareUrl = `https://twitter.com/intent/tweet?text=${encodedText}&url=${encodedUrl}`;
+  const linkedInShareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;
+  const redditShareUrl = `https://reddit.com/submit?url=${encodedUrl}&title=${encodedText}`;
 
   return (
     <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-2xs">
@@ -105,8 +116,8 @@ export function ShareBar({
           )}
         </button>
 
-        {/* Native Web Share (shown on mobile or when supported) */}
-        {typeof navigator !== "undefined" && typeof navigator.share === "function" && (
+        {/* Native Web Share (shown on client when supported) */}
+        {canShare && (
           <button
             type="button"
             onClick={handleNativeShare}
@@ -119,7 +130,7 @@ export function ShareBar({
 
         {/* Twitter / X */}
         <a
-          href={getTwitterShareUrl()}
+          href={twitterShareUrl}
           target="_blank"
           rel="noopener noreferrer"
           onClick={() => {
@@ -136,7 +147,7 @@ export function ShareBar({
 
         {/* LinkedIn */}
         <a
-          href={getLinkedInShareUrl()}
+          href={linkedInShareUrl}
           target="_blank"
           rel="noopener noreferrer"
           onClick={() => {
@@ -153,7 +164,7 @@ export function ShareBar({
 
         {/* Reddit */}
         <a
-          href={getRedditShareUrl()}
+          href={redditShareUrl}
           target="_blank"
           rel="noopener noreferrer"
           onClick={() => {
