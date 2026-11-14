@@ -4,8 +4,6 @@ import { calculateTakeHome } from "@/lib/calc/takeHome";
 import { getJurisdiction } from "@/data/tax/2026/jurisdictions";
 import { convertCurrency, FALLBACK_FX, type Currency } from "@/lib/fx";
 
-export const runtime = "edge";
-
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
